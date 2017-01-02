@@ -26,5 +26,8 @@
     <Setting Name="ShowTooltips" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="BC3IntfcPath" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">C:\Program Files (x86)\com0com\BC3Intfc.exe</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -34,7 +34,9 @@ Programm erhalten haben.Wenn nicht, siehe <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace AlmaAutoSensitize
@@ -65,39 +67,52 @@ namespace AlmaAutoSensitize
                 return;
             }
             string source = AppDomain.CurrentDomain.FriendlyName;
-            string log = "Application";
+            //string log = "Application";
 
             // Try to create the event source. Administrator privileges needed
-            try
-            {
-                if (!EventLog.SourceExists(source))
-                {
-                    EventLog.CreateEventSource(source, log);
-                }
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show("Could not create event source. Maybe you need to run this once as administrator.\n" + e.Message, "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
+            //try
+            //{
+            //    if (!EventLog.SourceExists(source))
+            //    {
+            //        EventLog.CreateEventSource(source, log);
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    MessageBox.Show("Could not create event source. Maybe you need to run this once as administrator.\n" + e.Message, "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //    return;
+            //}
 
             // Write a new event entry
+            //try
+            //{
+            //    if (data == null)
+            //    {
+            //        EventLog.WriteEntry(source, text, EventLogEntryType.Information);
+            //    } else
+            //    {
+            //        EventLog.WriteEntry(source, text, EventLogEntryType.Information, 1, 1, Encoding.UTF8.GetBytes(data));
+            //    }
+            //}
+            //catch(Exception e)
+            //{
+            //    MessageBox.Show("Could not write event\n" + e.Message, "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
+
+            string temppath = Path.GetTempPath();
             try
             {
-                if (data == null)
-                {
-                    EventLog.WriteEntry(source, text, EventLogEntryType.Information);
-                } else
-                {
-                    EventLog.WriteEntry(source, text, EventLogEntryType.Information, 1, 1, Encoding.UTF8.GetBytes(data));
-                }
-            }
-            catch(Exception e)
+                StreamWriter sw = File.AppendText(temppath + source + ".log");
+                sw.WriteLine("[" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff") + "] (" + Thread.CurrentThread.ManagedThreadId + ") " + text);
+                sw.Close();
+            } catch(Exception ex)
             {
-                MessageBox.Show("Could not write event\n" + e.Message, "Fehler", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                
             }
             
-            
+
+
+
         }
     }
 }

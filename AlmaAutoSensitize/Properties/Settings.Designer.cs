@@ -94,5 +94,14 @@ namespace AlmaAutoSensitize.Properties {
                 return ((bool)(this["ShowTooltips"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Program Files (x86)\\com0com\\BC3Intfc.exe")]
+        public string BC3IntfcPath {
+            get {
+                return ((string)(this["BC3IntfcPath"]));
+            }
+        }
     }
 }

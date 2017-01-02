@@ -44,7 +44,7 @@ namespace AlmaAutoSensitize
     {
         private string cmdResensitize;
         private string cmdDesensitize;
-        private SerialPort port;
+        private string comPort;
 
         private bool isWorking = false;
 
@@ -77,6 +77,19 @@ namespace AlmaAutoSensitize
             set
             {
                 cmdDesensitize = value;
+            }
+        }
+
+        public string ComPort
+        {
+            get
+            {
+                return comPort;
+            }
+
+            set
+            {
+                comPort = value;
             }
         }
 
@@ -115,13 +128,7 @@ namespace AlmaAutoSensitize
             }
             CmdResensitize = cmdResens;
             CmdDesensitize = cmdDesens;
-            port = new SerialPort();
-            port.PortName = comPort;
-            port.BaudRate = 9600;
-            port.DataBits = 8;
-            port.StopBits = StopBits.One;
-            port.Parity = Parity.None;
-            port.Handshake = Handshake.XOnXOff;
+            ComPort = comPort;
         }
 
         /// <summary>
@@ -129,18 +136,7 @@ namespace AlmaAutoSensitize
         /// </summary>
         public void Resensitize()
         {
-            Log.WriteLog("Resensitize");
-            if (isWorking)
-            {
-                throw new SensitizeException("Sensitizer is already in use.");
-            }
-            isWorking = true;
-
-            port.Open();
-            port.Write(this.CmdResensitize);
-            port.Close();
-
-            isWorking = false;
+            Sensitize(true);
         }
 
         /// <summary>
@@ -148,34 +144,37 @@ namespace AlmaAutoSensitize
         /// </summary>
         public void Desensitize()
         {
-            Log.WriteLog("Desensitize");
-            if (isWorking)
-            {
-                throw new SensitizeException("Sensitizer is already in use.");
-            }
-            isWorking = true;
-
-            port.Open();
-            port.Write(this.CmdDesensitize);
-            port.Close();
-
-            isWorking = false;
+            Sensitize(false);
         }
 
         /// <summary>
         /// Re/DeSensitize
         /// </summary>
-        /// <param name="what"></param>
+        /// <param name="what">true=Resensitize, false=Desensitize</param>
         public void Sensitize(bool what)
         {
-            if(what)
+            Log.WriteLog(what ? "Resensitize..." : "Desensitize...");
+            if (isWorking)
             {
-                Resensitize();
+                throw new SensitizeException("Sensitizer is already in use.");
             }
-            else
+            isWorking = true;
+            
+            using (ComPort cport = new ComPort(ComPort))
             {
-                Desensitize();
+                lock (cport)
+                {
+                    cport.Open();
+                    cport.Write(what ? this.CmdResensitize : this.cmdDesensitize);
+                }
             }
+
+            //port.Open();
+            //port.Write(what ? this.CmdResensitize : this.cmdDesensitize);
+            //port.Close();
+
+            isWorking = false;
+            Log.WriteLog(what ? "Resensitized!" : "Desensitized!");
         }
         
     }
@@ -191,5 +190,39 @@ namespace AlmaAutoSensitize
             Log.WriteLog("SensitizerException", message);
         }
 
+    }
+
+    class ComPort : IDisposable
+    {
+        private SerialPort port;
+        public ComPort(string comPort)
+        {
+            port = new SerialPort();
+            port.PortName = comPort;
+            port.BaudRate = 9600;
+            port.DataBits = 8;
+            port.StopBits = StopBits.One;
+            port.Parity = Parity.None;
+            port.Handshake = Handshake.XOnXOff;
+            port.ReadTimeout = 500;
+            port.WriteTimeout = 500;
+        }
+        public void Open()
+        {
+            port.Open();
+        }
+        public void Write(string str)
+        {
+            port.Write(str);
+        }
+        public string Read()
+        {
+            return port.ReadExisting();
+        }
+
+        public void Dispose()
+        {
+            port.Dispose();
+        }
     }
 }

@@ -40,6 +40,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using HttpServer;
+using System.Diagnostics;
 
 namespace AlmaAutoSensitize
 {
@@ -196,11 +197,20 @@ namespace AlmaAutoSensitize
                     }
                     try
                     {
+                        checkAndStartBC3Intfc();
                         sensitizer.Sensitize(what);
                     }
                     catch (Exception ex)
                     {
-                        Msgbox("Could not "+sensstatus+":\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        checkAndStartBC3Intfc();
+                        try
+                        {
+                            sensitizer.Sensitize(what);
+                        }
+                        catch (Exception ex2)
+                        {
+                            Msgbox("Could not do '" + sensstatus + "':\n" + ex2.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
                 }
             }
@@ -243,5 +253,20 @@ namespace AlmaAutoSensitize
             }).Start();
         }
 
+        /// <summary>
+        /// Check if BC3Intfc.exe is running. If not, start it.
+        /// </summary>
+        private static void checkAndStartBC3Intfc()
+        {
+            Log.WriteLog("Checking for BC3Intfc...");
+            Process[] pname = Process.GetProcessesByName("BC3Intfc");
+            if (pname.Length == 0)
+            {
+                Log.WriteLog("BC3Intfc not running, starting...");
+                Process.Start(Properties.Settings.Default.BC3IntfcPath);
+                Thread.Sleep(500);
+                Log.WriteLog("BC3Intfc should be started now");
+            }
+        }
     }
 }
