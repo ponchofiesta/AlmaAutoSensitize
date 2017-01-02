@@ -258,6 +258,10 @@ namespace AlmaAutoSensitize
         /// </summary>
         private static void checkAndStartBC3Intfc()
         {
+            if(Properties.Settings.Default.BC3IntfcPath == "")
+            {
+                return;
+            }
             Log.WriteLog("Checking for BC3Intfc...");
             Process[] pname = Process.GetProcessesByName("BC3Intfc");
             if (pname.Length == 0)
