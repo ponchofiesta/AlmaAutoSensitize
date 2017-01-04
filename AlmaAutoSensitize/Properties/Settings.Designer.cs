@@ -97,10 +97,19 @@ namespace AlmaAutoSensitize.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Program Files (x86)\\com0com\\BC3Intfc.exe")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Program Files (x86)\\AlmaAutoSensitize\\BC3Intfc.exe")]
         public string BC3IntfcPath {
             get {
                 return ((string)(this["BC3IntfcPath"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("de-DE")]
+        public string Language {
+            get {
+                return ((string)(this["Language"]));
             }
         }
     }

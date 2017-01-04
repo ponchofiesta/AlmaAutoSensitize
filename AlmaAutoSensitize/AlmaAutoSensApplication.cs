@@ -41,6 +41,9 @@ using System.Windows.Forms;
 using System.Xml;
 using HttpServer;
 using System.Diagnostics;
+using System.Globalization;
+using System.Resources;
+using System.Reflection;
 
 namespace AlmaAutoSensitize
 {
@@ -49,6 +52,7 @@ namespace AlmaAutoSensitize
         private static NotifyIcon notifyicon;
         private Webserver webserver;
         private static ISensitizer sensitizer;
+        private static ResourceManager lang;
 
         /// <summary>
         /// Constructor
@@ -57,8 +61,20 @@ namespace AlmaAutoSensitize
         {
             Log.WriteLog("Starting up");
 
+            lang = new ResourceManager(string.Format("{0}.Languages.strings", typeof(AlmaAutoSensApplication).Namespace), Assembly.GetExecutingAssembly());
+            if(string.IsNullOrEmpty(Properties.Settings.Default.Language))
+            {
+                Thread.CurrentThread.CurrentCulture = CultureInfo.InstalledUICulture;
+                Thread.CurrentThread.CurrentUICulture = CultureInfo.InstalledUICulture;
+            } else
+            {
+                CultureInfo ci = CultureInfo.GetCultureInfo(Properties.Settings.Default.Language);
+                Thread.CurrentThread.CurrentCulture = ci;
+                Thread.CurrentThread.CurrentUICulture = ci;
+            }
+            
             // set up tray icon
-            MenuItem menu = new MenuItem("Exit");
+            MenuItem menu = new MenuItem(lang.GetString("exit"));
             menu.Click += Menu_Click;
 
             notifyicon = new NotifyIcon();
@@ -73,7 +89,7 @@ namespace AlmaAutoSensitize
             }
             else
             {
-                MessageBox.Show("No sensitizer choosen", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, (MessageBoxOptions)0x40000);
+                MessageBox.Show(lang.GetString("no_sensitizer"), lang.GetString("error"), MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, (MessageBoxOptions)0x40000);
                 ExitApplication();
             }
             
@@ -84,7 +100,7 @@ namespace AlmaAutoSensitize
                 webserver.Start(OnRequest);
             } catch(Exception ex)
             {
-                MessageBox.Show("Could not start webserver.\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, (MessageBoxOptions)0x40000);
+                MessageBox.Show(string.Format("{0}\n{1}", lang.GetString("could_not_start_webserver"), ex.Message), lang.GetString("error"), MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, (MessageBoxOptions)0x40000);
                 ExitApplication();
             }
             
@@ -170,7 +186,7 @@ namespace AlmaAutoSensitize
                 catch (Exception ex)
                 {
                     Log.WriteLog("XML Exception: " + ex.Message);
-                    Msgbox("Could not read XML data from Alma:\n" + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Msgbox(string.Format("{0}\n{1}", lang.GetString("could_not_read_xml_from_alma"), ex.Message), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
                 if (node != null)
@@ -181,19 +197,19 @@ namespace AlmaAutoSensitize
                     if (node.InnerText == "true")
                     {
                         what = true;
-                        sensstatus = "Resensitizing";
+                        sensstatus = lang.GetString("resensitize");
                         notifyicon.Icon = Properties.Resources.iconLocked;
                     }
                     else
                     {
                         what = false;
-                        sensstatus = "Desensitizing";
+                        sensstatus = lang.GetString("desensitize"); ;
                         notifyicon.Icon = Properties.Resources.iconUnlocked;
                     }
                     Log.WriteLog(sensstatus);
                     if (Properties.Settings.Default.ShowTooltips)
                     {
-                        notifyicon.ShowBalloonTip(3000, "AlmaAutoSensitize", sensstatus, ToolTipIcon.Info);
+                        notifyicon.ShowBalloonTip(3000, sensstatus, sensstatus, ToolTipIcon.Info);
                     }
                     try
                     {
@@ -209,7 +225,7 @@ namespace AlmaAutoSensitize
                         }
                         catch (Exception ex2)
                         {
-                            Msgbox("Could not do '" + sensstatus + "':\n" + ex2.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            Msgbox(string.Format("{0}\n{1}", string.Format(lang.GetString("could_not_sens"), sensstatus), ex2.Message), lang.GetString("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
                 }
