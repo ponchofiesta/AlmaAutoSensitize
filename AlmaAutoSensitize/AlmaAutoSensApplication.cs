@@ -162,6 +162,8 @@ namespace AlmaAutoSensitize
             body = new string(inbuffer);
             Log.WriteLog("Got web request body for " + e.Request.Uri.ToString(), body);
 
+            Boolean success = true;
+
             // response body
             string strOutput = "";
 
@@ -225,6 +227,7 @@ namespace AlmaAutoSensitize
                         }
                         catch (Exception ex2)
                         {
+                            success = false;
                             Msgbox(string.Format("{0}\n{1}", string.Format(lang.GetString("could_not_sens"), sensstatus), ex2.Message), lang.GetString("error"), MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                     }
@@ -243,6 +246,12 @@ namespace AlmaAutoSensitize
                 response.AddHeader("Vary", "Origin");
                 response.AddHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
                 response.AddHeader("Access-Control-Allow-Headers", "Accept, Content-Type, SOAPAction");
+            }
+
+            strOutput = String.Format("<?xml version=\"1.0\" encoding=\"UTF-8\"?><root><SetSecurityResult>{0}</SetSecurityResult></root>", success ? "true" : "false");
+            if(!success)
+            {
+                response.Status = System.Net.HttpStatusCode.InternalServerError;
             }
 
             Stream output = response.Body;
